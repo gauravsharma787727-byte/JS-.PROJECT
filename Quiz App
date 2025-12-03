@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Quiz App</title>
+<style>
+  body{font-family:system-ui,Arial;background:#f8fafc;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+  .card{width:640px;background:white;padding:1rem;border-radius:10px;box-shadow:0 8px 24px rgba(2,6,23,.06)}
+  .question{font-weight:700;margin-bottom:.6rem}
+  .options{display:flex;flex-direction:column;gap:.5rem}
+  .option{padding:.6rem;border-radius:8px;border:1px solid #e6eef8;cursor:pointer}
+  .footer{display:flex;justify-content:space-between;align-items:center;margin-top:1rem}
+  button{padding:.6rem 1rem;border-radius:8px;border:0;background:#0ea5e9;color:white}
+</style>
+</head>
+<body>
+  <div class="card" id="quiz">
+    <div id="content"></div>
+    <div class="footer">
+      <div id="progress">0 / 0</div>
+      <div>
+        <button id="prev">Prev</button>
+        <button id="next">Next</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const questions = [
+    {q:'Which language runs in a browser?', options:['Java','C','Python','JavaScript'], answer:3},
+    {q:'What does CSS stand for?', options:['Central Style Sheets','Cascading Style Sheets','Cascading Simple Sheets','Computer Style Sheets'], answer:1},
+    {q:'Which HTML tag is used for an unordered list?', options:['<ol>','<li>','<ul>','<list>'], answer:2},
+    {q:'Who invented JavaScript?', options:['Brendan Eich','Dennis Ritchie','James Gosling','Guido van Rossum'], answer:0},
+    {q:'HTML stands for?', options:['Hyper Trainer Marking Language','Hyper Text Markup Language','High Text Making Language','None'], answer:1},
+    {q:'Which symbol is used for comments in JS?', options:['//','#','<!-- -->','**'], answer:0},
+    {q:'Inside which HTML element does JavaScript run?', options:['<script>','<js>','<javascript>','<code>'], answer:0},
+    {q:'Which of the following is a JavaScript Framework?', options:['React','Laravel','Django','Bootstrap'], answer:0},
+    {q:'Which of the following is NOT a programming language?', options:['HTML','Java','Python','C++'], answer:0},
+    {q:'Which method is used to print messages in the console?', options:['print()','console.log()','log.console()','write.log()'], answer:1},
+    {q:'Which HTML tag displays the largest heading?', options:['<h6>','<h3>','<h1>','<head>'], answer:2},
+    {q:'Which keyword declares a variable?', options:['int','let','var','both b & c'], answer:3},
+    {q:'JavaScript file extension is?', options:['.js','.java','.script','.jsc'], answer:0},
+    {q:'What is the output of: 2 + "2"', options:['22','4','error','undefined'], answer:0},
+    {q:'Which event occurs when a user clicks a button?', options:['onchange','onload','onclick','onhover'], answer:2},
+    {q:'Array in JavaScript is written using?', options:['{}','""','()','[]'], answer:3},
+    {q:'Which company developed JavaScript?', options:['Google','Netscape','Microsoft','Apple'], answer:1},
+    {q:'NaN stands for?', options:['Not a Name','Not a Number','Not a Node','None'], answer:1},
+    {q:'Which loop executes at least once?', options:['for','while','do-while','foreach'], answer:2},
+    {q:'JSON stands for?', options:['Java Source Object Notation','JavaScript Object Notation','Java Standard Object Notation','None'], answer:1},
+  ];
+
+  let idx = 0;
+  const userAnswers = new Array(questions.length).fill(null);
+  const content = document.getElementById('content');
+  const progress = document.getElementById('progress');
+
+  function render(){
+    const q = questions[idx];
+    content.innerHTML = `<div class="question">${q.q}</div><div class="options" id="opts"></div>`;
+    const opts = document.getElementById('opts');
+    q.options.forEach((opt, i) => {
+      const div = document.createElement('div');
+      div.className='option';
+      div.textContent = opt;
+      if(userAnswers[idx] === i) div.style.background='#dbeafe';
+      div.addEventListener('click', ()=> {
+        userAnswers[idx] = i; render();
+      });
+      opts.append(div);
+    });
+    progress.textContent = `${idx+1} / ${questions.length}`;
+  }
+
+  document.getElementById('prev').addEventListener('click', ()=>{ if(idx>0) idx--; render(); });
+  document.getElementById('next').addEventListener('click', ()=> {
+    if(idx < questions.length-1) { idx++; render(); }
+    else {
+      const score = userAnswers.reduce((s, a, i) => s + ((a === questions[i].answer) ? 1 : 0), 0);
+      content.innerHTML = `<h2>Score: ${score} / ${questions.length}</h2>
+      <ol>${questions.map((q,i)=>`<li><strong>${q.q}</strong><br>Answer: ${q.options[q.answer]}${userAnswers[i]===q.answer?' ✅':' ❌ (You chose: '+(userAnswers[i]!==null? q.options[userAnswers[i]] : 'No answer')+')'}</li>`).join('')}</ol>
+      <button id="retry">Retry</button>`;
+      document.getElementById('retry').addEventListener('click', ()=>{ userAnswers.fill(null); idx=0; render(); });
+      progress.textContent = `Result`;
+    }
+  });
+
+  render();
+</script>
+</body>
+</html>
