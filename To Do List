@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>To-Do List</title>
+<style>
+  body{font-family:system-ui,Arial;background:#f8fafc;padding:2rem;display:flex;justify-content:center}
+  .app{width:420px;background:white;padding:1rem;border-radius:10px;box-shadow:0 8px 24px rgba(2,6,23,.06)}
+  h1{margin:0 0 .5rem}
+  form{display:flex;gap:.5rem}
+  input[type="text"]{flex:1;padding:.6rem;border-radius:8px;border:1px solid #e6eef8}
+  button{padding:.6rem 1rem;border-radius:8px;border:0;background:#0ea5e9;color:white}
+  ul{list-style:none;padding:0;margin-top:1rem}
+  li{display:flex;align-items:center;justify-content:space-between;padding:.6rem;border-radius:6px;border:1px solid #f1f5f9;margin-top:.5rem}
+  .actions button{margin-left:.4rem}
+  .completed{text-decoration:line-through;color:#94a3b8}
+  .small{padding:.35rem .6rem;background:#e2e8f0;border-radius:6px;border:0}
+</style>
+</head>
+<body>
+  <div class="app">
+    <h1>To-Do List</h1>
+    <form id="taskForm" autocomplete="off">
+      <input id="taskInput" placeholder="Add new task..." />
+      <button>Add</button>
+    </form>
+    <ul id="tasks"></ul>
+    <div style="margin-top:.8rem;display:flex;justify-content:space-between">
+      <div id="stats">0 tasks</div>
+      <div>
+        <button id="clearCompleted" class="small">Clear Completed</button>
+        <button id="clearAll" class="small">Clear All</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const form = document.getElementById('taskForm');
+  const input = document.getElementById('taskInput');
+  const tasksEl = document.getElementById('tasks');
+  const stats = document.getElementById('stats');
+  const clearCompleted = document.getElementById('clearCompleted');
+  const clearAll = document.getElementById('clearAll');
+
+  let tasks = JSON.parse(localStorage.getItem('tasks_js')) || [];
+
+  function save(){ localStorage.setItem('tasks_js', JSON.stringify(tasks)); }
+  function render(){
+    tasksEl.innerHTML = '';
+    tasks.forEach((t, i) => {
+      const li = document.createElement('li');
+      const left = document.createElement('div');
+      const cb = document.createElement('input');
+      cb.type='checkbox'; cb.checked = t.done;
+      cb.addEventListener('change', ()=>{ tasks[i].done = cb.checked; save(); render(); });
+      const span = document.createElement('span');
+      span.textContent = t.text;
+      if(t.done) span.className='completed';
+      left.append(cb, span);
+      left.style.display='flex'; left.style.gap='0.6rem'; left.style.alignItems='center';
+      const actions = document.createElement('div');
+      actions.className='actions';
+      const edit = document.createElement('button'); edit.textContent = 'Edit'; edit.className='small';
+      edit.addEventListener('click', ()=> {
+        const newText = prompt('Edit task', t.text);
+        if(newText !== null){ tasks[i].text = newText.trim() || t.text; save(); render(); }
+      });
+      const del = document.createElement('button'); del.textContent='Delete'; del.className='small';
+      del.addEventListener('click', ()=>{ tasks.splice(i,1); save(); render(); });
+      actions.append(edit, del);
+      li.append(left, actions);
+      tasksEl.append(li);
+    });
+    stats.textContent = `${tasks.length} task${tasks.length!=1?'s':''}`;
+  }
+
+  form.addEventListener('submit', e=>{
+    e.preventDefault();
+    const text = input.value.trim();
+    if(!text) return;
+    tasks.push({ text, done:false, created: Date.now() });
+    input.value='';
+    save(); render();
+  });
+
+  clearCompleted.addEventListener('click', ()=>{ tasks = tasks.filter(t=>!t.done); save(); render(); });
+  clearAll.addEventListener('click', ()=>{ if(confirm('Clear all tasks?')){ tasks=[]; save(); render(); } });
+
+  render();
+})();
+</script>
+</body>
+</html>
