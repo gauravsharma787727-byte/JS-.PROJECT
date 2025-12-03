@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Form Validation</title>
+<style>
+  body{font-family:system-ui,Arial;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#eef2ff}
+  .form{background:white;padding:1.2rem;border-radius:10px;box-shadow:0 10px 30px rgba(2,6,23,.06);width:420px}
+  label{display:block;margin-top:.6rem}
+  input{width:100%;padding:.6rem;border-radius:8px;border:1px solid #e6eef8;margin-top:.25rem}
+  .err{color:#b91c1c;font-size:.85rem;margin-top:.25rem}
+  button{margin-top:.8rem;padding:.6rem 1rem;border-radius:8px;border:0;background:#6366f1;color:white}
+</style>
+</head>
+<body>
+  <form id="form" class="form" novalidate>
+    <h2>Register</h2>
+    <label>Name
+      <input name="name" id="name" required />
+      <div class="err" id="errName"></div>
+    </label>
+    <label>Email
+      <input name="email" id="email" required />
+      <div class="err" id="errEmail"></div>
+    </label>
+    <label>Password
+      <input name="password" id="password" type="password" required />
+      <div class="err" id="errPassword"></div>
+    </label>
+    <button type="submit">Submit</button>
+    <div id="success" style="color:green;margin-top:.8rem"></div>
+  </form>
+
+<script>
+  const form = document.getElementById('form');
+  const nameEl = document.getElementById('name');
+  const emailEl = document.getElementById('email');
+  const passEl = document.getElementById('password');
+  const errName = document.getElementById('errName');
+  const errEmail = document.getElementById('errEmail');
+  const errPassword = document.getElementById('errPassword');
+  const success = document.getElementById('success');
+
+  function validName(n){ return /^[A-Za-z\s]{2,}$/.test(n.trim()); }
+  function validEmail(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+  function strength(p){
+    if(p.length < 8) return 'too short';
+    let score = 0;
+    if(/[A-Z]/.test(p)) score++;
+    if(/[0-9]/.test(p)) score++;
+    if(/[^A-Za-z0-9]/.test(p)) score++;
+    return ['weak','moderate','strong'][Math.min(score,2)];
+  }
+
+  form.addEventListener('submit', e=>{
+    e.preventDefault();
+    let ok = true;
+    errName.textContent = errEmail.textContent = errPassword.textContent = success.textContent = '';
+
+    if(!validName(nameEl.value)){ errName.textContent = 'Enter a valid name (letters & spaces only, min 2).'; ok=false; }
+    if(!validEmail(emailEl.value)){ errEmail.textContent = 'Enter a valid email.'; ok=false; }
+    const pw = passEl.value;
+    const s = strength(pw);
+    if(s === 'too short'){ errPassword.textContent='Password must be at least 8 characters.'; ok=false; }
+    else if(s === 'weak'){ errPassword.textContent='Password is weak — add uppercase, digits or symbols.'; ok=false; }
+
+    if(ok){
+      success.textContent = 'Form submitted successfully (demo).';
+      // Here you would send data to server with fetch()
+      form.reset();
+    }
+  });
+</script>
+</body>
+</html>
